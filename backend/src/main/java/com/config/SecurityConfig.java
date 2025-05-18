@@ -13,6 +13,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 /**
  * Spring Security 설정 클래스
@@ -49,6 +52,8 @@ public class SecurityConfig {
         return http
                 // CSRF 비활성화(JWT는 세션을 사용하지 않음)
                 .csrf(AbstractHttpConfigurer::disable)
+                //cors정책 설정
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // 경로별 인가 정책 설정
                 .authorizeHttpRequests(auth -> auth
                         //로그인, 회원가입 등 허용
@@ -62,5 +67,22 @@ public class SecurityConfig {
                 // JWT필터 등록(기존 UsernamePasswordAuthenticationFilter 앞에 삽입)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    /**
+     * CORS 설정: 모든 Origin, Header, Method허용
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.addAllowedOriginPattern("*");  // 모든 origin 허용
+        config.addAllowedMethod("*");         // 모든 메서드 허용
+        config.addAllowedHeader("*");         // 모든 헤더 허용
+        config.setAllowCredentials(true);     // 자격 증명 허용
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
     }
 }

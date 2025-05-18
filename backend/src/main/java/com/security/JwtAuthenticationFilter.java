@@ -46,7 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         //3. 토큰이 존재하고 유효한 경우
-        if(token != null && jwtTokenProvider.validateToken(token)) {
+        if(token != null && jwtTokenProvider.validationToken(token)) {
             // 3-1. 토큰에서 사용자 ID 추출
             String userId = jwtTokenProvider.getUserIdFromToken(token);
 
@@ -60,5 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         //4. 필터 체인 계속 실행 (다음 필터 또는 컨트롤러로 전달)
         filterChain.doFilter(request, response);
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth");
     }
 }
