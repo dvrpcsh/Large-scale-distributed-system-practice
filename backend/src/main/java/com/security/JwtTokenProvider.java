@@ -81,4 +81,18 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    /**
+     * 토큰 만료까지 남은 시간 계산
+     *
+     * @param token JWT 토큰 문자열
+     * @return 남은 시간(ms)
+     */
+    public long getRemainingExpiration(String token) {
+        Claims claims = parseClaims(token);
+        Date expiration = claims.getExpiration(); //토큰 만료 시간
+        Date now = new Date(); //현재 시간
+
+        return expiration.getTime() - now.getTime(); //남은 시간(ms)
+    }
 }
