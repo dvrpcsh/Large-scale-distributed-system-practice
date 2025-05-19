@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import com.account.domain.TransactionType;
 
 import java.time.LocalDateTime;
 
@@ -42,13 +43,13 @@ public class Transaction {
      * @param fromAccountId 송금자 계좌 ID
      * @param toAccountId 수신자 계좌 ID
      * @param amount 거래 금액
-     * @param type 거래 타입(TRANSFER, DEPOSIT, WITHDRAW)
+     * @param transactionType 거래 타입(TRANSFER, DEPOSIT, WITHDRAW)
      */
-    public Transaction(Long fromAccountId, Long toAccountId, Long amount, Transaction type) {
+    public Transaction(Long fromAccountId, Long toAccountId, Long amount, TransactionType transactionType) {
         this.fromAccountId = fromAccountId;
         this.toAccountId = toAccountId;
         this.amount = amount;
-        this.type = type;
+        this.type = transactionType;
         this.createdAt = LocalDateTime.now();
     }
 }

@@ -1,6 +1,8 @@
 package com.account.controller;
 
 import com.account.domain.Account;
+import com.account.domain.Transaction;
+import com.account.dto.TransactionResponseDto;
 import com.account.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -43,4 +45,20 @@ public class AccountController {
 
         return ResponseEntity.ok(accounts);
     }
+
+    /**
+     * 거래내역 조회 API
+     * -요청된 계좌번호 기준으로 모든 입출금/송금 내역 조회
+     * -송신자/수신자 모두 포함된 거래를 반환
+     *
+     * @param accountNumber 요청 파라미터로 전달되는 계좌번호
+     * @return 거래내역 목록(JSON배열)
+     */
+    @GetMapping("/transactions")
+    public ResponseEntity<List<TransactionResponseDto>> getTransactionHistory(@RequestParam String accountNumber) {
+        List<TransactionResponseDto> list = accountService.getTransactionHistory(accountNumber);
+
+        return ResponseEntity.ok(list);
+    }
+
 }

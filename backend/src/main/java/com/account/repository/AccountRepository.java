@@ -16,7 +16,7 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
      * @param userId 사용자 ID
      * @return 사용자의 모든 계좌 리스트
      */
-    List<Account> fintByUserId(Long userId);
+    List<Account> findByUserId(Long userId);
 
     /**
      * 계좌번호로 계좌 조회(송금 등에서 사용)
