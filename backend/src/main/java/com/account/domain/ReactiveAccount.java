@@ -3,6 +3,7 @@ package com.account.domain;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import org.springframework.data.annotation.Version;
 
 /**
  * R2DBC용 리액티브 Account 엔티티
@@ -12,6 +13,10 @@ import org.springframework.data.relational.core.mapping.Table;
 @Data
 @Table("account") //실제 DB테이블명과 동일하게
 public class ReactiveAccount {
+
+    @Version
+    private Long version;
+
     @Id
     private Long id;
 

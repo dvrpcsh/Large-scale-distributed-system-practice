@@ -5,6 +5,7 @@ import com.account.domain.ReactiveTransaction;
 import com.account.domain.TransactionType;
 import com.account.dto.TransferRequestDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.relational.core.query.Query;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,11 @@ import reactor.core.publisher.Mono;
 import static org.springframework.data.relational.core.query.Criteria.where;
 
 /**
- * 💸 비동기 송금 트랜잭션 서비스
+ *  비동기 송금 트랜잭션 서비스
  * - 출금 → 입금 → 거래내역 저장을 하나의 R2DBC 트랜잭션으로 처리
+ * - 각 단계에 낙관적 락 충돌 대비 예외처리 추가
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReactiveTransferService {
@@ -31,7 +34,6 @@ public class ReactiveTransferService {
      * @return Mono<Void>
      */
     public Mono<Void> transfer(TransferRequestDto dto) {
-
         // 트랜잭션 오퍼레이터 생성
         TransactionalOperator txOperator = TransactionalOperator.create(transactionManager);
 
@@ -57,12 +59,24 @@ public class ReactiveTransferService {
                             TransactionType.TRANSFER
                     );
 
-                    // 3. 모든 작업을 트랜잭션으로 묶어 실행
+                    // 3. 트랜잭션 내에서 모든 작업 수행 + 예외 처리
                     return template.update(from)
-                            .then(template.update(to))
-                            .then(template.insert(tx));
+                            .onErrorResume(e -> {
+                                log.warn(" 출금 계좌 업데이트 실패: {}", e.getMessage());
+                                return Mono.error(new IllegalStateException("출금 계좌 처리 중 충돌이 발생했습니다."));
+                            })
+                            .then(template.update(to)
+                                    .onErrorResume(e -> {
+                                        log.warn(" 입금 계좌 업데이트 실패: {}", e.getMessage());
+                                        return Mono.error(new IllegalStateException("입금 계좌 처리 중 충돌이 발생했습니다."));
+                                    }))
+                            .then(template.insert(tx)
+                                    .onErrorResume(e -> {
+                                        log.warn(" 거래내역 저장 실패: {}", e.getMessage());
+                                        return Mono.error(new IllegalStateException("거래내역 저장 중 오류가 발생했습니다."));
+                                    }));
                 })
-                .as(txOperator::transactional)
+                .as(txOperator::transactional) // 전체를 트랜잭션으로 묶음
                 .then();
     }
 }
