@@ -33,6 +33,11 @@ spring:
             key-serializer: org.apache.kafka.common.serialization.StringSerializer
             value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+    r2dbc:
+        url: r2dbc:mysql://localhost:3306/music_share
+        username: music_user
+        password: star15321!
+
 
 # JWT ?? ??
 jwt:

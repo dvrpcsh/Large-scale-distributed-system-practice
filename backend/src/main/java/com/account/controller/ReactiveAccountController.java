@@ -18,6 +18,11 @@ import reactor.core.publisher.Flux;
 public class ReactiveAccountController {
     private final ReactiveAccountService reactiveAccountService;
 
+    /**
+     * 사용자 ID로 계좌 목록 조회(Flux반환)
+     * @param userId 사용자 고유 ID
+     * @return 비동기 Flux 스트림(계좌 목록)
+     */
     @GetMapping("/{userId}")
     public Flux<Account> getAccounts(@PathVariable Long userId) {
 

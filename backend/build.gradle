@@ -57,6 +57,10 @@ dependencies {
 
 	// Kafka
 	implementation 'org.springframework.kafka:spring-kafka'
+
+	// R2DBC(Reactive MySQL)
+	implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
+	runtimeOnly 'dev.miku:r2dbc-mysql' //MySQL R2DBC 드라이버
 }
 
 
