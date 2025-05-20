@@ -22,6 +22,18 @@ spring:
         host: localhost
         port: 6379
 
+    kafka:
+        bootstrap-servers: localhost:9092
+        consumer:
+            group-id: transaction-consumer-group
+            auto-offset-reset: earliest
+            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        producer:
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+
 # JWT ?? ??
 jwt:
     secret: YmFja2VuZF9zZWNyZXRfZm9yX2p3dF9hbmRfcmVmcmVzaF9zZWN1cml0eV9rZXkzMjMyMzIz
