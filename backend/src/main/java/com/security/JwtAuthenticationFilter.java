@@ -5,7 +5,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -36,11 +38,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
 
-        //1.요청 헤더에서 Autorization 값 추출
+        //1.Authorization 헤더에서 JWT 추출 ("Bearer ..." 형식)
         String header = request.getHeader("Authorization");
         String token = null;
 
-        //2. "Bearer "로 시작하는 토큰만 추출
+        //2. "Bearer "제거
         if(header != null && header.startsWith("Bearer ")) {
             token = header.substring(7);
         }
@@ -51,10 +53,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String userId = jwtTokenProvider.getUserIdFromToken(token);
 
             // 3-2. 사용자 인증 객체 생성 (비밀번호 및 권한은 여기선 사용 안 함)
-            JwtUserAuthentication authentication = new JwtUserAuthentication(userId, null, null);
+            CustomUser user = new CustomUser(Long.parseLong(userId), ""); //username은 비워둠
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+            // 3-3. 인증 객체에 요청 정보를 추가
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-            // 3-3. SecurityContextHolder에 인증 객체 저장
+            // 3-4. SecurityContextHolder에 인증 객체 저장
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

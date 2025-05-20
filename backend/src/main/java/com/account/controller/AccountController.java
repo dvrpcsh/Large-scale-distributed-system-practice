@@ -3,9 +3,12 @@ package com.account.controller;
 import com.account.domain.Account;
 import com.account.domain.Transaction;
 import com.account.dto.TransactionResponseDto;
+import com.account.dto.TransferRequestDto;
 import com.account.service.AccountService;
+import com.security.CustomUser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,6 +16,7 @@ import java.util.List;
 /**
  * AccountController
  * -계좌 생성 및 내 계좌 목록 조회를 처리하는 API
+ * -사용자 인증은 @AuthenticationPrincipal을 통해 처리
  */
 @RestController
 @RequestMapping("/api/accounts")
@@ -24,12 +28,12 @@ public class AccountController {
     /**
      * 계좌 생성 API
      * [POST] /api/accounts
-     * @param userId 사용자ID(임시로 파라미터로 받음)
+     * @param user 인증된 사용자(AccessToken기반)
      * @param accountNumber 생성할 계좌번호
      */
     @PostMapping
-    public ResponseEntity<Account> createAccount (@RequestParam Long userId, @RequestParam String accountNumber) {
-        Account created = accountService.createAccount(userId, accountNumber);
+    public ResponseEntity<Account> createAccount (@AuthenticationPrincipal CustomUser user, @RequestParam String accountNumber) {
+        Account created = accountService.createAccount(user.getUserId(), accountNumber);
 
         return ResponseEntity.ok(created);
     }
@@ -37,13 +41,24 @@ public class AccountController {
     /**
      * 내 계좌 전체 조회 API
      * [GET] /api/accounts/me?userId=1
-     * 추후 JWT인증 적용 시 토큰에서 userId 추출 방식으로 변경 가능
+     * @param user 인증된 사용자
      */
     @GetMapping("/me")
-    public ResponseEntity<List<Account>> getMyAccounts(@RequestParam Long userId) {
-        List<Account> accounts = accountService.getAccountsByUserId(userId);
+    public ResponseEntity<List<Account>> getMyAccounts(@AuthenticationPrincipal CustomUser user) {
+        List<Account> accounts = accountService.getAccountsByUserId(user.getUserId());
 
         return ResponseEntity.ok(accounts);
+    }
+
+    /**
+     * 계좌 송금
+     * @param dto 송금 요청 정보
+     */
+    @PostMapping("/transfer")
+    public ResponseEntity<Void> transfer(@RequestBody TransferRequestDto dto) {
+        accountService.transfer(dto);
+
+        return ResponseEntity.ok().build();
     }
 
     /**
